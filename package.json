@@ -1,0 +1,27 @@
+{
+  "name": "spider",
+  "version": "1.0.0",
+  "description": "node爬虫程序",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chenggang321/spider.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chenggang321/spider/issues"
+  },
+  "homepage": "https://github.com/chenggang321/spider#readme",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.3",
+    "express": "^4.17.1",
+    "superagent": "^5.2.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.2"
+  }
+}
