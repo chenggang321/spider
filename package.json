@@ -2,7 +2,7 @@
   "name": "spider",
   "version": "1.0.0",
   "description": "node爬虫程序",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,6 +19,7 @@
   "dependencies": {
     "cheerio": "^1.0.0-rc.3",
     "express": "^4.17.1",
+    "html-to-md": "^0.3.2",
     "superagent": "^5.2.2"
   },
   "devDependencies": {
