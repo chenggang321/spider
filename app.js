@@ -53,7 +53,7 @@ const queryArticleDetail = (articleContent,i,category) => {
             });
         }
     })
-    commitCode();
+    commitCode(new Date());
 }
 
 // 提交git代码
