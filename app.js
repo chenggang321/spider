@@ -2,6 +2,7 @@ const superagent= require('superagent'); // 请求代理
 const cheerio = require('cheerio'); // 解析页面
 const html2md = require('html-to-md') // html解析为md
 const exec = require('child_process').exec; // 执行命令行
+const schedule = require('node-schedule'); // 执行定时任务
 const fs = require('fs');
 
 let articleList = [];                              // 文章列表
@@ -19,23 +20,36 @@ const titleCategory = [{
     field: 'miniprogram'
 }]
 
-titleCategory.forEach(category => {
-    superagent.get(`${totalUrl}/channel/${category.field}/`).end((err, res) => {
-        if (err) {
-            console.log(`抓取失败 - ${err}`)
-        } else {
-            articleList = getArticleList(res);
-
-            // 遍历文章列表获取文章内容
-            articleList.forEach((item,i)=>{
-                queryArticleDetail(item,i,category)
-            })
-
-            commitCode(new Date().toDateString());
-        }
+// 定时任务
+const  scheduleCronstyle = ()=>{
+    // 每天的凌晨1点1分30秒触发:
+    schedule.scheduleJob('30 1 1 * * *',()=>{
+        console.log('定时任务执行:' + new Date());
+        spider();
     });
-})
+}
 
+scheduleCronstyle();
+
+
+const spider = () => {
+    titleCategory.forEach(category => {
+        superagent.get(`${totalUrl}/channel/${category.field}/`).end((err, res) => {
+            if (err) {
+                console.log(`抓取失败 - ${err}`)
+            } else {
+                articleList = getArticleList(res);
+
+                // 遍历文章列表获取文章内容
+                articleList.forEach((item,i)=>{
+                    queryArticleDetail(item,i,category)
+                })
+
+                commitCode(new Date().toDateString());
+            }
+        });
+    })
+}
 
 
 const queryArticleDetail = (articleContent,i,category) => {
