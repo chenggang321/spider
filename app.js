@@ -1,30 +1,42 @@
-const express = require('express');
 const superagent= require('superagent'); // 请求代理
 const cheerio = require('cheerio'); // 解析页面
 const html2md = require('html-to-md') // html解析为md
+const exec = require('child_process').exec; // 执行命令行
 const fs = require('fs');
-
-const app = express();
 
 let articleList = [];                              // 文章列表
 let article = [];                                  // 文章内容
 
-const totalUrl = 'https://segmentfault.com/'
+const totalUrl = 'https://segmentfault.com';
+const titleCategory = [{
+    text: '前端',
+    field: 'frontend'
+},{
+    text: '后端',
+    field: 'backend'
+},{
+    text: '小程序',
+    field: 'miniprogram'
+}]
 
-superagent.get(totalUrl).end((err, res) => {
-    if (err) {
-        console.log(`抓取失败 - ${err}`)
-    } else {
-        articleList = getArticleList(res);
+titleCategory.forEach(category => {
+    superagent.get(`${totalUrl}/channel/${category.field}/`).end((err, res) => {
+        if (err) {
+            console.log(`抓取失败 - ${err}`)
+        } else {
+            articleList = getArticleList(res);
 
-        // 遍历文章列表获取文章内容
-        articleList.forEach((item,i)=>{
-            queryArticleDetail(item,i)
-        })
-    }
-});
+            // 遍历文章列表获取文章内容
+            articleList.forEach((item,i)=>{
+                queryArticleDetail(item,i,category)
+            })
+        }
+    });
+})
 
-const queryArticleDetail = (articleContent,i) => {
+
+
+const queryArticleDetail = (articleContent,i,category) => {
     superagent.get(`${totalUrl}${articleContent.href}`).end(async (err, res) => {
         if (err) {
             console.log(`抓取失败 - ${err}`)
@@ -32,12 +44,47 @@ const queryArticleDetail = (articleContent,i) => {
             const articleJson = await getArticle(res);
             article.push(getArticle(res))
             const title = (articleJson.title||`文章${i}`).replace(/[\[\]\s\?\.!-;,:\'\"]+/g,'');
-            fs.writeFile(`./data/${title}.md`, JSON.stringify(articleJson.content), { 'flag': 'a' }, function(err) {
+            const dir = `data/${category.text}`;
+            const path =`${dir}/${title}.md`;
+            await mkdirByPath(dir)
+            await fs.writeFile(path, articleJson.content, function(err) {
                 if(err) throw err;
                 console.log(`${articleJson.title}写入成功`);
+                commitCode(articleJson.title);
             });
         }
     })
+}
+
+// 提交git代码
+const commitCode = (title) => {
+    const code = [
+        'git add *',
+        `git commit -m "${title}"`,
+        'git push'
+    ];
+    code.forEach(function (cmd, i) {
+        setTimeout(function () {
+            console.log(cmd);
+            exec(cmd, function (err, stdout, stderr) {
+                if (err) {
+                    console.log(err);
+                }
+            });
+        }, i * 1000);
+    })
+}
+
+const mkdirByPath = async path => {
+    const [first] = path.split('/');
+    await mkdir(first);
+    await mkdir(path);
+}
+
+const mkdir = dirName => {
+    if (!fs.existsSync(dirName)) {
+        fs.mkdirSync(dirName);
+    }
 }
 
 // 获取文章内容
@@ -46,10 +93,7 @@ const getArticle = async res => {
     const content = await html2md($('.article-content').html());
     return {
         content,
-        title: $('#sf-article_title .text-body').text(),
-        tag: Array.from($('#sf-article_tags .badge-tag')).reduce((total,ele) => {
-            return `${total}${total?',':''}${$(ele).text()}`
-        },'')
+        title: $('#sf-article_title .text-body').text()
     }
 }
 
@@ -66,17 +110,3 @@ const getArticleList = res => {
     })
     return articleList
 }
-
-/**
- * [description] - 跟路由
- */
-// 当一个get请求 http://localhost:3000时，就会后面的async函数
-app.get('/', async (req, res, next) => {
-    res.send(article);
-});
-
-
-let server = app.listen(3000, function () {
-    let port = server.address().port;
-    console.log(`Your App is running at http://localhost:${port}`);
-});
