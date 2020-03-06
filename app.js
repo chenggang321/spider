@@ -30,6 +30,8 @@ titleCategory.forEach(category => {
             articleList.forEach((item,i)=>{
                 queryArticleDetail(item,i,category)
             })
+
+            commitCode(new Date().toDateString());
         }
     });
 })
@@ -53,14 +55,13 @@ const queryArticleDetail = (articleContent,i,category) => {
             });
         }
     })
-    commitCode(new Date());
 }
 
 // 提交git代码
 const commitCode = (title) => {
     const code = [
         'git add *',
-        `git commit -m "${title}"`,
+        `git commit -m "自动提交-${title}"`,
         'git push'
     ];
     code.forEach(function (cmd, i) {
