@@ -3,6 +3,8 @@ FROM node:lts-alpine
 WORKDIR /app
 COPY . /app
 
+RUN npm install yum
+RUN yum install -y git
 
 RUN rm -f package-lock.json \
     ; rm -rf .idea \
