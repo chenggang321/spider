@@ -9,10 +9,10 @@ RUN rm -f package-lock.json \
     ; npm config set registry "https://registry.npm.taobao.org/" \
     && npm install
 
-RUN npm install yum -g \
-    ; yum update \
-    ; yum install git
-
+# RUN npm install yum -g \
+#     ; yum update \
+#     ; yum install git
+#
 
 EXPOSE 3000
 CMD ["node", "app.js"]
