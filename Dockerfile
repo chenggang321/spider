@@ -3,8 +3,6 @@ FROM node:lts-alpine
 WORKDIR /app
 COPY . /app
 
-RUN apt-get update
-RUN apt-get -y install git
 
 RUN rm -f package-lock.json \
     ; rm -rf .idea \
