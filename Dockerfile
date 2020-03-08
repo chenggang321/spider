@@ -9,8 +9,8 @@ RUN rm -f package-lock.json \
     ; npm config set registry "https://registry.npm.taobao.org/" \
     && npm install
 
-RUN npm install yum
-RUN yum install -y git
+RUN npm install yum \
+    ; yum install -y git
 
 
 EXPOSE 3000
