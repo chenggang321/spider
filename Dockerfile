@@ -1,5 +1,5 @@
 FROM node:lts-alpine
-FROM git:lts-alpine
+FROM git
 
 WORKDIR /app
 COPY . /app
