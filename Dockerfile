@@ -1,13 +1,8 @@
 FROM node:lts-alpine
-FROM python:3.6-alpine
+FROM git:lts-alpine
 
 WORKDIR /app
 COPY . /app
-
-# install git - apt-get replace with apk
-RUN apk update && \
-    apk upgrade && \
-    apk add --no-cache bash git openssh
 
 RUN rm -f package-lock.json \
     ; rm -rf .idea \
