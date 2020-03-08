@@ -10,7 +10,8 @@ RUN rm -f package-lock.json \
     && npm install
 
 RUN npm install yum -g \
-    ; yum install -y git
+    ; yum update \
+    ; yum install git
 
 
 EXPOSE 3000
