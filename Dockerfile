@@ -1,5 +1,4 @@
 FROM node:lts-alpine
-FROM ubuntu
 
 WORKDIR /app
 COPY . /app
