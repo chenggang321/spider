@@ -23,7 +23,7 @@ const titleCategory = [{
 // 定时任务
 const  scheduleCronstyle = ()=>{
     // 每天的凌晨1点1分30秒触发:
-    schedule.scheduleJob('30 * * * * *',()=>{
+    schedule.scheduleJob('30 1 1 * * *',()=>{
         console.log('定时任务执行:' + new Date());
         spider();
     });
