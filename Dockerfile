@@ -1,7 +1,13 @@
 FROM node:lts-alpine
+FROM python:3.6-alpine
 
 WORKDIR /app
 COPY . /app
+
+# install git - apt-get replace with apk
+RUN apk update && \
+    apk upgrade && \
+    apk add --no-cache bash git openssh
 
 RUN rm -f package-lock.json \
     ; rm -rf .idea \
@@ -9,10 +15,6 @@ RUN rm -f package-lock.json \
     ; npm config set registry "https://registry.npm.taobao.org/" \
     && npm install
 
-# RUN npm install yum -g \
-#     ; yum update \
-#     ; yum install git
-#
 
 EXPOSE 3000
 CMD ["node", "app.js"]
