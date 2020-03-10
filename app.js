@@ -23,7 +23,7 @@ const titleCategory = [{
 // 定时任务
 const  scheduleCronstyle = ()=>{
     // 每天的凌晨1点1分30秒触发:
-    schedule.scheduleJob('30 1 1 * * *',()=>{
+    schedule.scheduleJob('30 * * * * *',()=>{
         console.log('定时任务执行:' + new Date());
         spider();
     });
@@ -62,7 +62,7 @@ const queryArticleDetail = (articleContent,i,category) => {
             const path =`${dir}/${title}.md`;
             await mkdirByPath(dir)
             await fs.writeFile(path, articleJson.content, function(err) {
-                if(err) throw err;
+                if(err) return console.log(err);
                 console.log(`${articleJson.title}写入成功`);
                 commitCode(articleJson.title);
             });
