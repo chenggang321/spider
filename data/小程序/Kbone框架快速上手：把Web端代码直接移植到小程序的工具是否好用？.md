@@ -2,7 +2,7 @@
 
 作者：张泽栓首发于[知晓云](https://cloud.minapp.com/?utm_sourcesegmentfault&utm_mediumarticle_footer&utm_term)公众号，阅读原文
 
-<img referrerpolicy="no-referrer" data-src="/img/remote/1460000021867270" src="https://cdn.segmentfault.com/v-5e154194/global/img/squares.svg" alt title>
+<img referrerpolicy="no-referrer" data-src="/img/remote/1460000021867270" src="https://cdn.segmentfault.com/v-5e67172c/global/img/squares.svg" alt title>
 
 近日，微信官方开始推广一个新的多端统一开发工具——Kbone。
 
@@ -34,7 +34,7 @@
 
 使用对应的 adapt，问题不大。使用以下代码解决：
 
-<img referrerpolicy="no-referrer" data-src="/img/remote/1460000021867269" src="https://cdn.segmentfault.com/v-5e154194/global/img/squares.svg" alt title>
+<img referrerpolicy="no-referrer" data-src="/img/remote/1460000021867269" src="https://cdn.segmentfault.com/v-5e67172c/global/img/squares.svg" alt title>
 
 ### 三、DOM/BOM 接口的兼容性问题
 
@@ -42,11 +42,11 @@
 
 1、兼容性。例如 Event 对象以浏览器提供接口并不完全一致，使用以下代码兼容（只是举例说明，并未做完全的兼容测试）：
 
-<img referrerpolicy="no-referrer" data-src="/img/remote/1460000021867271" src="https://cdn.segmentfault.com/v-5e154194/global/img/squares.svg" alt title>
+<img referrerpolicy="no-referrer" data-src="/img/remote/1460000021867271" src="https://cdn.segmentfault.com/v-5e67172c/global/img/squares.svg" alt title>
 
 2、某些接口需要自己实现，例如：
 
-<img referrerpolicy="no-referrer" data-src="/img/remote/1460000021867277" src="https://cdn.segmentfault.com/v-5e154194/global/img/squares.svg" alt title>
+<img referrerpolicy="no-referrer" data-src="/img/remote/1460000021867277" src="https://cdn.segmentfault.com/v-5e67172c/global/img/squares.svg" alt title>
 
 ### 四、样式
 
@@ -68,25 +68,25 @@
 
 这个问题有点大。前面的问题，可以通过改代码或新项目通过技术选型避开。但是在开发的过程中，没有调试工具，这是个灾难。目前唯一能用的只有 wxml 节点树页面。但是这个的问题也很大。绝大部分的元素都渲染成了 view，并且每个节点都差不多。例如下图，这一堆东西，看到就头疼。
 
-<img referrerpolicy="no-referrer" data-src="/img/remote/1460000021867272" src="https://cdn.segmentfault.com/v-5e154194/global/img/squares.svg" alt title>
+<img referrerpolicy="no-referrer" data-src="/img/remote/1460000021867272" src="https://cdn.segmentfault.com/v-5e67172c/global/img/squares.svg" alt title>
 
 虽然旧项目迁移很不顺利，但是使用 Kbone 开发新项目，相对来说，体验好很多，也顺利很多。我们直接使用了官方的 cli 工具初始化项目，并开发了「知晓云 SDK demo」应用（源码）。界面如下图：
 
-<img referrerpolicy="no-referrer" data-src="/img/remote/1460000021867273" src="https://cdn.segmentfault.com/v-5e154194/global/img/squares.svg" alt title>
+<img referrerpolicy="no-referrer" data-src="/img/remote/1460000021867273" src="https://cdn.segmentfault.com/v-5e67172c/global/img/squares.svg" alt title>
 
 开发过程中遇到的阻碍，也是「样式」和「调试工具」的问题。这里跟大家介绍一下，Kbone 框架接入知晓云后端云服务 SDK 的步骤：1、安装 SDK npm 包。
 
 npm install minapp-sdk 或 yarn add minapp-sdk2、package.josn 里添加 alias。
 
-<img referrerpolicy="no-referrer" data-src="/img/remote/1460000021867274" src="https://cdn.segmentfault.com/v-5e154194/global/img/squares.svg" alt title>
+<img referrerpolicy="no-referrer" data-src="/img/remote/1460000021867274" src="https://cdn.segmentfault.com/v-5e67172c/global/img/squares.svg" alt title>
 
 3、scripts/webpack.mp.config.js 里添加 alias。
 
-<img referrerpolicy="no-referrer" data-src="/img/remote/1460000021867275" src="https://cdn.segmentfault.com/v-5e154194/global/img/squares.svg" alt title>
+<img referrerpolicy="no-referrer" data-src="/img/remote/1460000021867275" src="https://cdn.segmentfault.com/v-5e67172c/global/img/squares.svg" alt title>
 
 4、在需要用的 sdk 的文件中引入 「baas」模块。
 
-<img referrerpolicy="no-referrer" data-src="/img/remote/1460000021867276" src="https://cdn.segmentfault.com/v-5e154194/global/img/squares.svg" alt title>
+<img referrerpolicy="no-referrer" data-src="/img/remote/1460000021867276" src="https://cdn.segmentfault.com/v-5e67172c/global/img/squares.svg" alt title>
 
 完成了以上几步，即可在不同平台中引入对应的 sdk。
 
@@ -106,4 +106,4 @@ npm install minapp-sdk 或 yarn add minapp-sdk2、package.josn 里添加 alias�
 
 关于 Kbone 框架就介绍到这里啦，如果你需要获取文中所提及的源码，请在知晓云公众号后台回复「Kbone」。
 
-<img referrerpolicy="no-referrer" data-src="/img/bVbBf8L" src="https://cdn.segmentfault.com/v-5e154194/global/img/squares.svg" alt="mincloud2019.png" title="mincloud2019.png">
+<img referrerpolicy="no-referrer" data-src="/img/bVbBf8L" src="https://cdn.segmentfault.com/v-5e67172c/global/img/squares.svg" alt="mincloud2019.png" title="mincloud2019.png">

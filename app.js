@@ -44,8 +44,6 @@ const spider = () => {
                 articleList.forEach((item,i)=>{
                     queryArticleDetail(item,i,category)
                 })
-
-                commitCode(new Date().toDateString());
             }
         });
     })
@@ -66,6 +64,7 @@ const queryArticleDetail = (articleContent,i,category) => {
             await fs.writeFile(path, articleJson.content, function(err) {
                 if(err) throw err;
                 console.log(`${articleJson.title}写入成功`);
+                commitCode(articleJson.title);
             });
         }
     })

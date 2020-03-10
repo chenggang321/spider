@@ -44,6 +44,6 @@ vscode的优势，就是插件太全面了。不管你如何不喜欢微软，�
 
 这玩意是个非常冷门的神器，如果你是这方面大神，你的Mac肯定已经被你调教的服服贴贴，然而我，可能还包括看帖子的你，都是小白。所以我直接贴教程，最核心的部分参考了[这篇](https://sspai.com/post/43758)，如果你想举一反三，再推荐[另外一篇](https://segmentfault.com/a/1190000011273388?utm_sourcetag-newest)。随便翻翻基本上就够用了，尤其是前者。
 
-AppleScript代码竟然不能直接粘贴，贴图片吧，只有寥寥几行。<img referrerpolicy="no-referrer" data-src="/img/bVbDG5H" src="https://cdn.segmentfault.com/v-5e154194/global/img/squares.svg" alt="截屏2020-02-22下午11.50.59.png" title="截屏2020-02-22下午11.50.59.png">
+AppleScript代码竟然不能直接粘贴，贴图片吧，只有寥寥几行。<img referrerpolicy="no-referrer" data-src="/img/bVbDG5H" src="https://cdn.segmentfault.com/v-5e67172c/global/img/squares.svg" alt="截屏2020-02-22下午11.50.59.png" title="截屏2020-02-22下午11.50.59.png">
 
 小伙伴们赶快跑起来吧！实测有效（2020年02月22日）！
