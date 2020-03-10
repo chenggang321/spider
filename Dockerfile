@@ -3,6 +3,9 @@ FROM node:lts-alpine
 WORKDIR /app
 COPY . /app
 
+# 配置git
+RUN apk add git
+
 RUN rm -f package-lock.json \
     ; rm -rf .idea \
     ; rm -rf node_modules \
