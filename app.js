@@ -72,6 +72,7 @@ const queryArticleDetail = (articleContent,i,category) => {
 
 // 提交git代码
 const commitCode = (title) => {
+    console.log('提交git代码');
     const code = [
         'git add *',
         `git commit -m "自动提交-${title}"`,
