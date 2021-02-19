@@ -51,20 +51,24 @@ const spider = () => {
 
 
 const queryArticleDetail = (articleContent,i,category) => {
+    console.log(`${totalUrl}${articleContent.href}`)
     superagent.get(`${totalUrl}${articleContent.href}`).end(async (err, res) => {
         if (err) {
             console.log(`抓取失败 - ${err}`)
         } else {
             const articleJson = await getArticle(res);
             article.push(getArticle(res))
-            const title = (articleJson.title||`文章${i}`).replace(/[\[\]\s\?\.!-;,:\'\"]+/g,'');
+            let title = (articleContent.title || articleJson.title||`文章${i}`);
+            if(title){
+                title = title.replace(/[\[\]\s\?\.!-;,:\'\"]+/g,'')
+            }
             const dir = `data/${category.text}`;
             const path =`${dir}/${title}.md`;
             await mkdirByPath(dir)
             await fs.writeFile(path, articleJson.content, function(err) {
                 if(err) return console.log(err);
-                console.log(`${articleJson.title}写入成功`);
-                commitCode(articleJson.title);
+                console.log(`${title}写入成功`);
+                // commitCode(articleJson.title);
             });
         }
     })
@@ -125,3 +129,5 @@ const getArticleList = res => {
     })
     return articleList
 }
+
+spider()
