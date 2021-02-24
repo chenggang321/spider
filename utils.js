@@ -19,16 +19,22 @@ function request(url) {
 async function writeFile({path, fileContent}) {
     const pathSplit = path.split('/');
     const fileName = pathSplit.pop()
-    mkdirsSync(pathSplit.join('/'))
-    await fs.writeFile(path, fileContent, function(err) {
-        if(err) return console.log(err);
-        console.log(`${fileName}写入成功`);
-        // commitCode(articleJson.title);
-    });
+    await mkdirsSync(pathSplit.join('/'))
+    new Promise(async (resolve, reject) => {
+        await fs.writeFile(path, fileContent, function (err) {
+            if (err) {
+                reject(err)
+            } else {
+                console.log(`${fileName}写入成功`);
+                resolve()
+                // commitCode(fileName);
+            }
+        });
+    })
 }
 
 // 提交git代码
-function commitCode (title){
+function commitCode(title) {
     console.log('提交git代码');
     const code = [
         'git add *',
@@ -58,8 +64,29 @@ function mkdirsSync(dirname) {
     }
 }
 
+function dateFormat(fmt, date) {
+    let ret;
+    const opt = {
+        "Y+": date.getFullYear().toString(),        // 年
+        "m+": (date.getMonth() + 1).toString(),     // 月
+        "d+": date.getDate().toString(),            // 日
+        "H+": date.getHours().toString(),           // 时
+        "M+": date.getMinutes().toString(),         // 分
+        "S+": date.getSeconds().toString()          // 秒
+        // 有其他格式化字符需求可以继续添加，必须转化成字符串
+    };
+    for (let k in opt) {
+        ret = new RegExp("(" + k + ")").exec(fmt);
+        if (ret) {
+            fmt = fmt.replace(ret[1], (ret[1].length == 1) ? (opt[k]) : (opt[k].padStart(ret[1].length, "0")))
+        }
+    }
+    return fmt;
+}
+
 
 module.exports = {
     request,
     writeFile,
+    dateFormat
 }

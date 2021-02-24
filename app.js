@@ -3,15 +3,23 @@ const html2md = require('html-to-md') // html解析为md
 const schedule = require('node-schedule'); // 执行定时任务
 const {
     request,
-    writeFile
+    writeFile,
+    dateFormat,
 } = require('./utils'); // 请求代理
-const {queryCategory, addCategory, addContent} = require('./mysql')
 
-let articleList = [];                              // 文章列表
-let article = [];                                  // 文章内容
+const {
+    queryCategory,
+    addCategory,
+    queryContentByTitle,
+    addContent,
+    endConnection
+} = require('./mysql')
 
+// md html
+const isMd = false
 const totalUrl = 'https://segmentfault.com';
 const getCategory = totalUrl + '/api/user/channels';
+const baseDir = 'data/'
 
 // 定时任务
 // const  scheduleCronstyle = ()=>{
@@ -24,66 +32,92 @@ const getCategory = totalUrl + '/api/user/channels';
 //
 // scheduleCronstyle();
 
-const spider = async () => {
+async function spider() {
     // 获取所有分类
     const titleCategory = await getAllChannel();
     // 将分类数据存入数据库
-    for(let category of titleCategory){
+    for (let category of titleCategory) {
         // 获取数据库中的分类数据
         const categoryList = await queryCategory();
         const isHasCategory = categoryList.map(item => item.name).includes(category.name);
-        if(!isHasCategory){
+        if (!isHasCategory) {
             await addCategory(category.name)
         }
         const res = await request(`${totalUrl}${category.url}`)
-        articleList = getArticleList(res);
+        const articleList = getArticleList(res);
 
         // 遍历文章列表获取文章内容
-        for(let article of articleList){
-            await queryArticleDetail(article,category)
+        for (let article of articleList) {
+            await queryArticleDetail(article, category)
         }
     }
+
+    endConnection()
 }
 
 spider();
 
-const queryArticleDetail = async (articleContent,category) => {
-    const res = await request(`${totalUrl}${articleContent.href}`)
-    const articleJson = await getArticle(res);
-    article.push(getArticle(res))
-    let title = (articleContent.title || articleJson.title);
-    if(title){
-        title = title.replace(/[\[\]\s\?\.!-;,:\'\"]+/g,'')
+async function queryArticleDetail(article, category) {
+    const res = await request(`${totalUrl}${article.href}`)
+    const articleContent = getArticle(res);
+    const title = article.title.replace(/[\[\]\s\?\.!-;,:\'\"]+/g, '')
+    const dir = `${baseDir}${category.name}`;
+    const path = `${dir}/${title}${isMd ? '.md' : '.html'}`;
+    // 存入数据库
+    // 获取数据中的文章
+    const DArticle = await queryContentByTitle(title) || [];
+
+    if(!DArticle.length){
+        // 获取数据库中的分类数据
+        const categoryList = await queryCategory();
+
+        // 获取对应分类id
+        const categoryId = categoryList.filter(item => item.name === category.name).pop().id
+
+        const articleDetail = {
+            title,
+            add_time: dateFormat('YYYY-mm-dd',new Date()),
+            views: 0,
+            description: article.description.trim(),
+            content: articleContent,
+            category_id: categoryId,
+            user_id: 1
+        }
+
+        await addContent(articleDetail).then(() =>{
+            console.log(title + '存入成功')
+        })
     }
-    const dir = `data/${category.name}`;
-    const path =`${dir}/${title}.md`;
-    await writeFile({path,fileContent:articleJson.content})
+
+    // 写入文件夹
+    await writeFile({path, fileContent: articleContent})
 }
 
 // 获取文章内容
-const getArticle = async res => {
+async function getArticle(res) {
     const $ = cheerio.load(res.text, {decodeEntities: false});
     let content = null;
     try {
-        content = await html2md($('article.article-content').html());
-    }catch (err){
+        if (isMd) {
+            content = await html2md($('article.article-content').html());
+        } else {
+            content = $('article.article-content').html();
+        }
+    } catch (err) {
         return new Function()
     }
-
-    return {
-        content,
-        title: $('#sf-article_title .text-body').text()
-    }
+    return content
 }
 
 // 获取文章列表
-const getArticleList = res => {
+function getArticleList(res) {
     const $ = cheerio.load(res.text);
     let articleList = [];
-    $('.news-list').children().each((index,ele) => {
+    $('.news-list').children().each((index, ele) => {
         const item = {
             title: $(ele).find('.news__item-title').text(),
-            href: $(ele).find('a').attr('href')
+            href: $(ele).find('a').attr('href'),
+            description: $(ele).find('.article-excerpt').text()
         }
         articleList.push(item)
     })
@@ -91,7 +125,7 @@ const getArticleList = res => {
 }
 
 // 获取所有分类
-async function getAllChannel(){
+async function getAllChannel() {
     const res = await request(`${getCategory}`);
-    return JSON.parse(res.text).data.map(({name,url}) => ({name,url}))
+    return JSON.parse(res.text).data.map(({name, url}) => ({name, url}))
 }
