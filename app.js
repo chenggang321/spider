@@ -22,15 +22,15 @@ const getCategory = totalUrl + '/api/user/channels';
 const baseDir = 'data/'
 
 // 定时任务
-// const  scheduleCronstyle = ()=>{
-//     // 每天的凌晨1点1分30秒触发:
-//     schedule.scheduleJob('30 1 1 * * *',()=>{
-//         console.log('定时任务执行:' + new Date());
-//         spider();
-//     });
-// }
-//
-// scheduleCronstyle();
+const  scheduleCronstyle = ()=>{
+    // 每天的凌晨1点1分30秒触发:
+    schedule.scheduleJob('30 1 1 * * *',()=>{
+        console.log('定时任务执行:' + new Date());
+        spider();
+    });
+}
+
+scheduleCronstyle();
 
 async function spider() {
     // 获取所有分类
@@ -54,8 +54,6 @@ async function spider() {
 
     endConnection()
 }
-
-spider();
 
 async function queryArticleDetail(article, category) {
     const res = await request(`${totalUrl}${article.href}`)
