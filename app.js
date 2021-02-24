@@ -59,7 +59,7 @@ spider();
 
 async function queryArticleDetail(article, category) {
     const res = await request(`${totalUrl}${article.href}`)
-    const articleContent = getArticle(res);
+    const articleContent = await getArticle(res);
     const title = article.title.replace(/[\[\]\s\?\.!-;,:\'\"]+/g, '')
     const dir = `${baseDir}${category.name}`;
     const path = `${dir}/${title}${isMd ? '.md' : '.html'}`;
@@ -84,13 +84,13 @@ async function queryArticleDetail(article, category) {
             user_id: 1
         }
 
-        await addContent(articleDetail).then(() =>{
+        addContent(articleDetail).then(() => {
             console.log(title + '存入成功')
         })
     }
 
     // 写入文件夹
-    await writeFile({path, fileContent: articleContent})
+    // await writeFile({path, fileContent: articleContent})
 }
 
 // 获取文章内容
@@ -101,7 +101,7 @@ async function getArticle(res) {
         if (isMd) {
             content = await html2md($('article.article-content').html());
         } else {
-            content = $('article.article-content').html();
+            content = await $('article.article-content').html();
         }
     } catch (err) {
         return new Function()
