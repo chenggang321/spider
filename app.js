@@ -39,7 +39,7 @@ async function spider() {
     for (let category of titleCategory) {
         // 获取数据库中的分类数据
         const categoryList = await queryCategory();
-        const isHasCategory = categoryList.map(item => item.name).includes(category.name);
+        const isHasCategory = (categoryList||[]).map(item => item.name).includes(category.name);
         if (!isHasCategory) {
             await addCategory(category.name)
         }
