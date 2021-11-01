@@ -2,6 +2,7 @@ const superagent = require('superagent'); // 请求代理
 const exec = require('child_process').exec; // 执行命令行
 const fs = require('fs');
 const path = require('path');
+const fetch = require('request')
 
 function request(url) {
     return new Promise((resolve, reject) => {
@@ -84,9 +85,17 @@ function dateFormat(fmt, date) {
     return fmt;
 }
 
+function downloadImage(url, dir = 'data/images',filename = url.split('/').pop()){
+    if(url.split('.').pop().toLowerCase() === 'pdf') {
+        dir = 'data/pdf'
+    }
+    fetch(encodeURI(url)).pipe(fs.createWriteStream(dir + "/" + filename))
+}
+
 
 module.exports = {
     request,
     writeFile,
-    dateFormat
+    dateFormat,
+    downloadImage
 }

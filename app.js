@@ -1,129 +1,206 @@
 const cheerio = require('cheerio'); // 解析页面
-const html2md = require('html-to-md') // html解析为md
-const schedule = require('node-schedule'); // 执行定时任务
 const {
     request,
     writeFile,
-    dateFormat,
+    downloadImage
 } = require('./utils'); // 请求代理
 
-const {
-    queryCategory,
-    addCategory,
-    queryContentByTitle,
-    addContent,
-    endConnection
-} = require('./mysql')
+spiderData()
 
-// md html
-const isMd = false
-const totalUrl = 'https://segmentfault.com';
-const getCategory = totalUrl + '/api/user/channels';
-const baseDir = 'data/'
-
-// 定时任务
-const  scheduleCronstyle = ()=>{
-    // 每天的凌晨1点1分30秒触发:
-    schedule.scheduleJob('30 1 1 * * *',()=>{
-        console.log('定时任务执行:' + new Date());
-        spider();
-    });
+const genUrl = (url, id = '') => {
+    if (!url) return ''
+    const str = '@/views/about/activity/images/' + id + url.split('/').pop() + '@'
+    return `@require('${str}')`
 }
 
-scheduleCronstyle();
-
-async function spider() {
-    // 获取所有分类
-    const titleCategory = await getAllChannel();
-    // 将分类数据存入数据库
-    for (let category of titleCategory) {
-        // 获取数据库中的分类数据
-        const categoryList = await queryCategory();
-        const isHasCategory = (categoryList||[]).map(item => item.name).includes(category.name);
-        if (!isHasCategory) {
-            await addCategory(category.name)
-        }
-        const res = await request(`${totalUrl}${category.url}`)
-        const articleList = getArticleList(res);
-
-        // 遍历文章列表获取文章内容
-        for (let article of articleList) {
-            await queryArticleDetail(article, category)
-        }
-    }
-
-    endConnection()
-}
-
-async function queryArticleDetail(article, category) {
-    const res = await request(`${totalUrl}${article.href}`)
-    const articleContent = await getArticle(res);
-    const title = article.title.replace(/[\[\]\s\?\.!-;,:\'\"]+/g, '')
-    const dir = `${baseDir}${category.name}`;
-    const path = `${dir}/${title}${isMd ? '.md' : '.html'}`;
-    // 存入数据库
-    // 获取数据中的文章
-    const DArticle = await queryContentByTitle(title) || [];
-
-    if(!DArticle.length){
-        // 获取数据库中的分类数据
-        const categoryList = await queryCategory();
-
-        // 获取对应分类id
-        const categoryId = categoryList.filter(item => item.name === category.name).pop().id
-
-        const articleDetail = {
-            title,
-            add_time: dateFormat('YYYY-mm-dd',new Date()),
-            views: 0,
-            description: article.description.trim(),
-            content: articleContent,
-            category_id: categoryId,
-            user_id: 1
-        }
-
-        addContent(articleDetail).then(() => {
-            console.log(title + '存入成功')
-        })
-    }
-
-    // 写入文件夹
-    // await writeFile({path, fileContent: articleContent})
-}
-
-// 获取文章内容
-async function getArticle(res) {
-    const $ = cheerio.load(res.text, {decodeEntities: false});
-    let content = null;
-    try {
-        if (isMd) {
-            content = await html2md($('article.article-content').html());
-        } else {
-            content = await $('article.article-content').html();
-        }
-    } catch (err) {
-        return new Function()
-    }
-    return content
-}
-
-// 获取文章列表
-function getArticleList(res) {
-    const $ = cheerio.load(res.text);
-    let articleList = [];
-    $('.news-list').children().each((index, ele) => {
+async function spiderData() {
+    let currentMeeting = '10'
+    // currentMeeting = ''
+    let listRes = await request(`http://www.csindex.cn/zh-CN/about/indexing-investment-forum`)
+    // listRes = await request(`http://www.csindex.cn/en/about/indexing-investment-forum`)
+    const $ = cheerio.load(listRes.text);
+    const meetingList = []
+    $('.form_list').children().each((index, ele) => {
+        const href = $(ele).find('a').attr('href')
+        const id = href.split('/').pop()
         const item = {
-            title: $(ele).find('.news__item-title').text(),
-            href: $(ele).find('a').attr('href'),
-            description: $(ele).find('.article-excerpt').text()
+            title: $(ele).find('a').text(),
+            href,
+            id
         }
-        articleList.push(item)
+        if (currentMeeting == id) {
+            meetingList.push(item)
+        } else if (!currentMeeting) {
+            meetingList.push(item)
+        }
     })
-    return articleList
-}
 
-// 获取所有分类
-async function getAllChannel() {
-    const res = await request(`${getCategory}`);
-    return JSON.parse(res.text).data.map(({name, url}) => ({name, url}))
+    for (let meeting of meetingList) {
+        const detailRes = await request(meeting.href)
+        const $ = cheerio.load(detailRes.text);
+        const banner = $('.lt_banner').find('img').attr('src')
+        meeting.banner = genUrl(banner, meeting.id)
+        if (banner) {
+            const filename = meeting.id + banner.split('/').pop()
+            downloadImage($('.lt_banner').find('img').attr('src'), 'data/images', filename)
+        }
+        meeting.intro = $('.lt_abstract').text()
+        // 时间轴
+        const timeLine = []
+        $('.arr_list').children().each((index, ele) => {
+            const type = 1;
+            const desc = [];
+            const desc1 = [];
+            const zeroTypeList = [
+                '欢迎辞',
+                '会间休息',
+                '午间休息',
+                '结束',
+                'Welcome',
+                'Tea Break',
+                'Lunch',
+                'End'
+            ];
+            const endList = [
+                '结束',
+                'End'
+            ]
+            const zcrList = [
+                '主持人：',
+                'Moderator:',
+            ]
+            const tljbList = [
+                '讨论嘉宾（排名不分先后）：',
+                'Panelists (In no Particular Order):',
+                '讨论嘉宾：（排名不分先后）',
+                'Panelists:'
+            ]
+            let isZcr = true;
+            $(ele).find('.ap_con').children().each((index, ele) => {
+                if ($(ele).is('dd')) {
+                    if (zcrList.includes($(ele).text())) {
+                        isZcr = true
+                    }
+                    if (tljbList.includes($(ele).text())) {
+                        isZcr = false
+                    }
+                    const link = $(ele).find('a').attr('href')
+                    if(link){
+                        downloadImage(link)
+                    }
+                    if (isZcr) {
+                        desc.push({
+                            text: $(ele).text(),
+                            link
+                        })
+                    } else {
+                        desc1.push({
+                            text: $(ele).text(),
+                            link
+                        })
+                    }
+
+                }
+            })
+            const titleLink = $(ele).find('.ap_con > dt > a').attr('href')
+            if(titleLink){
+                downloadImage(titleLink)
+            }
+            const item = {
+                type: zeroTypeList.includes($(ele).find('.ap_con > dt').text()) ? 0 : type,
+                date: $(ele).find('.date').text(),
+                title: {
+                    text: $(ele).find('.ap_con > dt').text(),
+                    link: titleLink
+                }
+            }
+            if (desc.length) {
+                item.desc = desc
+            }
+            if (desc1.length) {
+                item.desc1 = desc1
+            }
+            if (endList.includes($(ele).find('.ap_con > dt').text())) {
+                item.time = 'end'
+            }
+            timeLine.push(item)
+        })
+        meeting.timeLine = timeLine
+
+        // 致辞
+        const coverflowSwiper = []
+        $('.ycap > .yjjb > ul').children().each((index, ele) => {
+            const url = $(ele).find('img').attr('src')
+            let text = $(ele).find('.ms.fz').text()
+            if (currentMeeting == '12') {
+                text = $(ele).find('.name').text() + '：' + $(ele).find('.ms').text()
+            }
+            coverflowSwiper.push({
+                text,
+                url: genUrl(url),
+            })
+            if (url) {
+                downloadImage($(ele).find('img').attr('src'))
+            }
+        })
+        meeting.coverflowSwiper = coverflowSwiper
+
+        // 主题演讲
+        const list = []
+        $('.con_l > .yjjb').children().each((index, ele) => {
+            const url = $(ele).find('img').attr('src')
+            list.push({
+                desc1: $(ele).find('.ms.fz').text(),
+                img: genUrl(url),
+            })
+            if (url) {
+                downloadImage($(ele).find('img').attr('src'))
+            }
+        })
+        meeting.list = list
+    }
+
+    console.log(meetingList)
+    await writeFile({path: `data/${currentMeeting}data.json`, fileContent: JSON.stringify(meetingList)})
+}
+let lang = 'zh-CN'
+// lang = 'en'
+const detailList = [
+    {
+        type: 14,
+        pre: 'http://www.csindex.cn/',
+        end: '/about/indexing-investment-forum-details/14_detail?id=1'
+    },
+    {
+        type: 13,
+        pre: 'http://www.csindex.cn/',
+        end: '/about/indexing-investment-forum-details/13_detail?id=1'
+    },
+]
+
+// genArticle('http://www.csindex.cn/zh-CN/about/indexing-investment-forum-details/13_detail?id=1', 13)
+
+async function genArticle(url, type = '') {
+    const res = await request(url)
+    const $ = cheerio.load(res.text, {decodeEntities: false})
+    const detailList = {}
+    $('.tab-content').children().each((index, ele) => {
+        const title = $(ele).find('.head > p').text()
+        const img = $(ele).find('.cen .img').find('img').attr('src')
+        if (img) {
+            downloadImage(img, 'detailImg')
+        }
+        const desc = $(ele).find('.cen .title > p').text()
+        const content = $(ele).find('.content .text').html()
+        const detail = {
+            id: index + 1,
+            title,
+            img,
+            desc,
+            content
+        }
+        detailList[index + 1] = detail
+    })
+    console.log(detailList)
+    await writeFile({path: `data/${type}detail.json`, fileContent: JSON.stringify(detailList)})
 }
